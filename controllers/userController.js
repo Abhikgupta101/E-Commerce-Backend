@@ -33,9 +33,14 @@ const createUser = async (req, res) => {
         }
 
         const user = await User.signup(req.body.email, req.body.password, req.body.name)
-        //delete a token
+
+        const cookieOptions = {
+            httpOnly: true,
+            secure: true,
+            sameSite: "none"
+        };
         const authId = createToken(user._id)
-        res.status(200).cookie("token", authId).json({
+        res.status(200).cookie("token", authId, cookieOptions).json({
             success: true,
             user,
             authId
@@ -82,8 +87,13 @@ const accountLogin = async (req, res) => {
         }
         const user = await User.login(req.body.email, req.body.password)
         //create a token
+        const cookieOptions = {
+            httpOnly: true,
+            secure: true,
+            sameSite: "none"
+        };
         const authId = createToken(user._id)
-        res.status(200).cookie("token", authId).json({
+        res.status(200).cookie("token", authId, cookieOptions).json({
             success: true,
             user,
             message: 'Logged In',
@@ -127,7 +137,7 @@ const sendEmail = async (req, res) => {
                 from: process.env.EMAIL,
                 to: email,
                 subject: "Sending Email For password Reset",
-                text: `http://localhost:3000/password/reset/${user._id}/${token}`
+                text: `https://dropkart-app.netlify.app/password/reset/${user._id}/${token}`
             }
 
             transporter.sendMail(mailOptions, (error, info) => {
@@ -180,112 +190,6 @@ const changePassword = async (req, res) => {
 
 }
 
-
-
-//Delete User
-// const deleteUser = async (req, res) => {
-//     const user_id = req.user._id
-//     try {
-//         const user = await User.findById({ _id: user_id })
-//         const posts = user.posts
-//         const followers = user.followers
-//         const following = user.following
-
-//         //deleting user
-//         await User.deleteOne({ _id: user_id })
-
-//         //logout user
-//         res.status(200).cookie("token", null, { expires: new Date(Date.now()), httpOnly: true });
-
-//         //deleting user posts
-//         for (let i = 0; i < posts.length; i++) {
-//             const id = posts[i];
-//             await Post.deleteOne({ _id: id })
-//         }
-
-//         //remove followers
-//         for (let i = 0; i < followers.length; i++) {
-//             const id = followers[i]
-//             const followuser = await User.findById({ _id: id })
-//             await followuser.updateOne({ $pull: { "following": user_id } })
-
-//         }
-
-//         //remove following
-//         for (let i = 0; i < following.length; i++) {
-//             const id = following[i]
-//             const followinguser = await User.findById({ _id: id })
-//             await followinguser.updateOne({ $pull: { "followers": user_id } })
-
-//         }
-
-
-//         return res.status(200).json(user)
-//     }
-//     catch (error) {
-//         res.status(400).json({ error: error.message })
-//     }
-// }
-
-// //follow user
-// const followUnfollow = async (req, res) => {
-//     const { id } = req.params
-//     const user_id = req.user._id
-//     try {
-//         let user = await User.findById({ _id: id })
-//         let current_user = await User.findById({ _id: user_id })
-//         if (!user) {
-//             return res.status(404).json({
-//                 sucess: false,
-//                 message: "User not found"
-//             })
-//         }
-
-//         if (user.followers.includes(user_id)) {
-//             user = await user.updateOne({ $pull: { "followers": user_id } })
-//             current_user = await current_user.updateOne({ $pull: { "following": id } })
-//             console.log(user)
-//             return res.status(200).json(user)
-//         }
-
-//         else {
-//             user = await user.updateOne({ $push: { "followers": user_id } })
-//             current_user = await current_user.updateOne({ $push: { "following": id } })
-//             console.log(user)
-//             return res.status(200).json(user)
-//         }
-//     }
-//     catch (error) {
-//         res.status(400).json({ error: error.message })
-//     }
-// }
-
-// const removeFollower = async (res, req) => {
-//     const { id } = req.params
-//     const user_id = req.user._id
-//     try {
-//         let user = await User.findById({ _id: id })
-//         let current_user = await User.findById({ _id: user_id })
-//         if (!user) {
-//             return res.status(404).json({
-//                 sucess: false,
-//                 message: "User not found"
-//             })
-//         }
-
-//         if (current_user.followers.includes(id)) {
-//             current_user = await current_user.updateOne({ $pull: { "followers": id } })
-//             user = await user.updateOne({ $pull: { "following": user_id } })
-//             console.log(user)
-//             return res.status(200).json(user)
-//         }
-//     }
-//     catch (error) {
-//         res.status(400).json({ error: error.message })
-//     }
-
-// }
-
 module.exports = {
     createUser,
     getUser,
@@ -294,9 +198,5 @@ module.exports = {
     logout,
     sendEmail,
     changePassword
-
-    // deleteUser,
-    // followUnfollow,
-    // removeFollower
 
 }
