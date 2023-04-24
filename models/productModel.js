@@ -20,11 +20,6 @@ const productSchema = new Schema({
         type: String,
         required: [true, "Please Upload Product's Image"],
     },
-
-    // category: {
-    //     type: String,
-    //     required: [true, "Please Enter Product Category"],
-    // },
     brand: {
         type: String,
         required: [true, "Please Enter Brand Name"],
