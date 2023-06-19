@@ -260,6 +260,20 @@ const filterProduct = async (req, res) => {
             sortBy[sort[0]] = "asc";
         }
 
+        let count = Product.find({
+            name: {
+                $regex: search,
+                $options: "i"
+            }
+        })
+            .where("brand")
+            .in([...brand])
+            .where("gender")
+            .in([...gender])
+            .where("sizes")
+            .in([...sizes])
+            .sort(sortBy)
+
         let products = Product.find({
             name: {
                 $regex: search,
@@ -278,11 +292,12 @@ const filterProduct = async (req, res) => {
             .skip(page * limit)
             .limit(limit)
 
-        // if (req.query.stock == 0) {
-        //     products = products.where('stock').equals(0)
-        // }
+        if (req.query.stock == 0) {
+            products = products.where('stock').equals(0)
+        }
 
         products = await products
+        count = await count
 
         const total = await Product.countDocuments({
             sizes: { $in: [...sizes] },
@@ -295,6 +310,7 @@ const filterProduct = async (req, res) => {
 
         res.status(200).json({
             error: false,
+            count,
             total,
             page: page + 1,
             limit,
